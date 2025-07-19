@@ -3,197 +3,186 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Car Racing Game</title>
+  <title>Memory Card Match </title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-    }
-
-    body {
-      overflow: hidden;
-      background: linear-gradient(120deg, #1e3c72, #2a5298, #1e3c72);
-      background-size: 300% 300%;
-      animation: bgmove 12s ease infinite;
       font-family: 'Segoe UI', sans-serif;
     }
 
-    @keyframes bgmove {
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(-45deg, #ff6ec4, #7873f5, #47c4ff, #ff9a9e);
+      background-size: 400% 400%;
+      animation: gradientMove 12s ease infinite;
+    }
+
+    @keyframes gradientMove {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
 
-    .game-area {
-      position: relative;
-      width: 400px;
-      height: 600px;
-      margin: 30px auto;
-      border: 3px solid #fff;
-      background: #222;
-      overflow: hidden;
-      box-shadow: 0 0 30px #00f2ff88, 0 0 50px #00f2ff44;
-      border-radius: 12px;
-    }
-
-    .road-line {
-      position: absolute;
-      width: 10px;
-      height: 80px;
-      background: #fff;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      animation: roadScroll 1s linear infinite;
-    }
-
-    @keyframes roadScroll {
-      0% { top: -100px; }
-      100% { top: 100%; }
-    }
-
-    .car {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 50px;
-      height: 100px;
-      background: linear-gradient(145deg, #ff3c3c, #aa0000);
-      border-radius: 10px;
-      box-shadow: 0 0 15px #ff5555, 0 0 25px #ff0000aa;
-      transition: left 0.1s linear;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .car::before {
-      content: '';
-      position: absolute;
-      top: 10px;
-      width: 30px;
-      height: 10px;
-      background: #fff;
-      border-radius: 5px;
-    }
-
-    .obstacle {
-      position: absolute;
-      width: 50px;
-      height: 100px;
-      background: linear-gradient(145deg, #00f2ff, #005577);
-      border-radius: 10px;
-      top: -120px;
-      box-shadow: 0 0 10px #00f2ff99, 0 0 20px #00f2ff66;
-    }
-
-    .game-over {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+    .game-container {
+      width: 90%;
+      max-width: 600px;
+      padding: 20px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 20px;
+      box-shadow: 0 0 30px #ffffff33;
+      text-align: center;
       color: #fff;
+    }
+
+    h1 {
+      margin-bottom: 20px;
       font-size: 2rem;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 20px 30px;
-      border-radius: 10px;
-      display: none;
+      text-shadow: 0 0 10px #fff;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .card {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #111;
+      border-radius: 12px;
+      position: relative;
+      perspective: 1000px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #000;
+      transition: transform 0.3s;
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    .card-front {
+      background: #eee;
+      color: #333;
+    }
+
+    .card-back {
+      background: linear-gradient(145deg, #1c1c1c, #2a2a2a);
+      color: #fff;
+      transform: rotateY(180deg);
+    }
+
+    .vip {
+      box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700aa;
+      animation: glow 1.5s infinite alternate;
+    }
+
+    @keyframes glow {
+      0% { box-shadow: 0 0 10px #ffd700aa; }
+      100% { box-shadow: 0 0 25px #ffd700ee; }
+    }
+
+    .matched .card-inner {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .status {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      color: #ff0;
+      text-shadow: 0 0 5px #000;
     }
   </style>
 </head>
 <body>
 
-  <div class="game-area" id="gameArea">
-    <div class="car" id="playerCar"></div>
-    <div class="game-over" id="gameOverText">💥 Game Over!<br>Refresh to Play Again</div>
+  <div class="game-container">
+    <h1>💎 VIP Memory Match</h1>
+    <div class="grid" id="cardGrid"></div>
+    <div class="status" id="statusText">Find all pairs!</div>
   </div>
 
   <script>
-    const gameArea = document.getElementById("gameArea");
-    const playerCar = document.getElementById("playerCar");
-    const gameOverText = document.getElementById("gameOverText");
+    const cardGrid = document.getElementById("cardGrid");
+    const statusText = document.getElementById("statusText");
+    const symbols = ['🍕','🚗','🎮','🎧','🍔','📱']; // 6 symbols
 
-    let playerX = 175;
-    let obstacles = [];
+    let deck = [...symbols, ...symbols];
+    let flipped = [];
+    let matched = 0;
 
-    function createRoadLines() {
-      for (let i = 0; i < 5; i++) {
-        const line = document.createElement("div");
-        line.classList.add("road-line");
-        line.style.top = i * 150 + "px";
-        gameArea.appendChild(line);
-      }
-    }
+    // Shuffle deck
+    deck.sort(() => 0.5 - Math.random());
 
-    function createObstacle() {
-      const obs = document.createElement("div");
-      obs.classList.add("obstacle");
-      obs.style.left = Math.floor(Math.random() * 350) + "px";
-      gameArea.appendChild(obs);
-      obstacles.push(obs);
-    }
+    // Pick a random VIP card
+    const vipIndex = Math.floor(Math.random() * deck.length);
 
-    function moveObstacles() {
-      for (let i = 0; i < obstacles.length; i++) {
-        const obs = obstacles[i];
-        let top = parseInt(obs.style.top.replace("px", "")) || -100;
-        if (top > 600) {
-          obs.remove();
-          obstacles.splice(i, 1);
-          i--;
-        } else {
-          obs.style.top = top + 5 + "px";
-          if (checkCollision(obs)) {
-            gameOver();
+    // Generate cards
+    deck.forEach((symbol, index) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      if (index === vipIndex) card.classList.add('vip');
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="card-front"></div>
+          <div class="card-back">${symbol}</div>
+        </div>
+      `;
+      card.addEventListener('click', () => flipCard(card, symbol));
+      cardGrid.appendChild(card);
+    });
+
+    function flipCard(card, symbol) {
+      if (flipped.length === 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+      card.classList.add('flipped');
+      flipped.push({card, symbol});
+
+      if (flipped.length === 2) {
+        if (flipped[0].symbol === flipped[1].symbol) {
+          flipped[0].card.classList.add('matched');
+          flipped[1].card.classList.add('matched');
+          flipped = [];
+          matched += 2;
+          if (matched === deck.length) {
+            statusText.innerHTML = "🎉 All pairs matched! VIP power!";
           }
+        } else {
+          setTimeout(() => {
+            flipped[0].card.classList.remove('flipped');
+            flipped[1].card.classList.remove('flipped');
+            flipped = [];
+          }, 1000);
         }
       }
     }
-
-    function checkCollision(obstacle) {
-      const carRect = playerCar.getBoundingClientRect();
-      const obsRect = obstacle.getBoundingClientRect();
-      return !(
-        carRect.top > obsRect.bottom ||
-        carRect.bottom < obsRect.top ||
-        carRect.left > obsRect.right ||
-        carRect.right < obsRect.left
-      );
-    }
-
-    function gameOver() {
-      gameOverText.style.display = "block";
-      clearInterval(gameLoop);
-      clearInterval(obstacleLoop);
-    }
-
-    function updatePlayerPosition() {
-      playerCar.style.left = playerX + "px";
-    }
-
-    function handleKeys(e) {
-      if (e.key === "ArrowLeft" || e.key === "a") {
-        if (playerX > 10) playerX -= 15;
-      } else if (e.key === "ArrowRight" || e.key === "d") {
-        if (playerX < 340) playerX += 15;
-      }
-      updatePlayerPosition();
-    }
-
-    document.addEventListener("keydown", handleKeys);
-
-    createRoadLines();
-    updatePlayerPosition();
-
-    const gameLoop = setInterval(() => {
-      moveObstacles();
-    }, 30);
-
-    const obstacleLoop = setInterval(() => {
-      createObstacle();
-    }, 1000);
   </script>
 
 </body>
